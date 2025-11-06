@@ -48,7 +48,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ccache gettext libncurses5-dev xsltproc p7zip-full wget file
+          sudo apt-get install -y ccache gettext libncurses5-dev xsltproc p7zip-full wget file zstd
+
 
       - name: Create Directories
         run: |
@@ -71,7 +72,12 @@ jobs:
             wget -q -O "$SDK_FILE" "$SDK_URL_PATH/$SDK_FILE"
           fi
           sha256sum -c sha256sums.small
-          7z x "$SDK_FILE" -so | tar -C "$SDK_HOME" -xvf - --strip=1
+
+          # Распаковка .tar.zst с помощью unzstd + tar
+          echo "Extracting $SDK_FILE..."
+          mkdir -p "$SDK_HOME"
+          unzstd -c "$SDK_FILE" | tar -C "$SDK_HOME" -xvf -
+
           cd "$SDK_HOME"
           ln -sf "$CACHE_DIR_DL" dl
           ln -sf "$CACHE_DIR_FEEDS" feeds
