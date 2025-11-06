@@ -66,20 +66,22 @@ jobs:
         run: |
           cd "$CACHE_DIR_SDK"
           if ! ( wget -q -O - "$SDK_URL_PATH/sha256sums" | grep -- "$SDK_NAME" > sha256sums.small 2>/dev/null ) ; then
-            echo "::error::Can not find ${SDK_NAME} file in sha256sums."
+            echo "::error::Cannot find ${SDK_NAME} file in sha256sums."
             exit 1
           fi
-          SDK_FILE="$(cat sha256sums.small | cut -d' ' -f2 | sed 's/*//g')"
+          SDK_FILE="$(awk '{print $2}' sha256sums.small | sed 's/*//')"
           if ! sha256sum -c ./sha256sums.small >/dev/null 2>&1 ; then
             wget -q -O "$SDK_FILE" "$SDK_URL_PATH/$SDK_FILE"
             if ! sha256sum -c ./sha256sums.small >/dev/null 2>&1 ; then
-              echo "::error::SDK can not be verified!"
+              echo "::error::SDK cannot be verified!"
               exit 1
             fi
           fi
           cd -
           file "$CACHE_DIR_SDK/$SDK_FILE"
-          7z x "$CACHE_DIR_SDK/$SDK_FILE" -so | tar -C "$SDK_HOME" -xvf - --strip=1
+          # ✅ правильная распаковка .tar.zst
+          mkdir -p "$SDK_HOME"
+          tar --use-compress-program=unzstd -C "$SDK_HOME" -xvf "$CACHE_DIR_SDK/$SDK_FILE" --strip=1
           cd "$SDK_HOME"
           test -d "dl" && rm -rf "dl" || true
           test -d "feeds" && rm -rf "feeds" || true
@@ -91,6 +93,7 @@ jobs:
           sed -i 's#git.openwrt.org/project/luci#github.com/openwrt/luci#' feeds.conf
           sed -i 's#git.openwrt.org/feed/telephony#github.com/openwrt/telephony#' feeds.conf
           cd -
+
       - name: Update and Install Packages
         run: |
           cd "$SDK_HOME"
