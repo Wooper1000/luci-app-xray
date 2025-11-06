@@ -19,8 +19,8 @@ jobs:
       matrix:
         include:
           - arch: rockchip_armv8
-            sdk_url_path: http://downloads.openwrt.org/releases/24.10.1/targets/rockchip/armv8
-            sdk_name: friendlyarm_nanopi-r4s-ext4-sysupgrade.img.gz
+            sdk_url_path: https://downloads.openwrt.org/releases/24.10.1/targets/rockchip/armv8
+            sdk_name: openwrt-sdk-24.10.1-rockchip-armv8_gcc-13.3.0_musl.Linux-x86_64.tar.zst
 
     env:
       SDK_URL_PATH: ${{ matrix.sdk_url_path }}
